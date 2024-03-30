@@ -1,0 +1,13 @@
+.layer-button-container {
+  &.active {
+    background-color: rgba(0, 0, 0, 0.04);
+  }
+
+  .arrows-container {
+    display: inline-flex;
+
+    &:hover {
+      background-color: darkgray;
+    }
+  }
+}

@@ -1,0 +1,45 @@
+.homepage-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+
+  .drag-n-drop-container {
+    height: 200px;
+    width: 300px;
+    border: 2px dashed black;
+    margin-right: 30px;
+
+    .dropzone {
+      height: 100%;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+
+      .drag-n-drop-text {
+
+      }
+    }
+  }
+}
+
+.featured-animations-modal {
+  .featured-animations-list-container {
+    .featured-animations-list-title {
+      font-weight: bold;
+    }
+
+    .featured-animations-list-item {
+      cursor: pointer;
+      border: 1px solid black;
+      margin: 5px 0;
+      padding: 0 5px;
+      display: flex;
+      align-items: center;
+
+      &:hover {
+        background-color: lightgrey;
+      }
+    }
+  }
+}
