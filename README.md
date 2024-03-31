@@ -1,30 +1,52 @@
-# React + TypeScript + Vite
+# Real-Time Animation Editor with Collaboration
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This repository represent Vitalii Sukhostavskyi's assessment task and gives users capabilities of real-time animation editor tool with collaboration.
 
-Currently, two official plugins are available:
+## Demo:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## How to run locally:
 
-## Expanding the ESLint configuration
+Prerequisite: you need to have Node v18 install on your machine.
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
-
-- Configure the top-level `parserOptions` property like this:
-
-```js
-export default {
-  // other rules...
-  parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-  },
-}
+This repository has both client and server applications, so we will need to start both:
+1. From root application folder run server app:
+```
+cd server
+npm install
+npm start
 ```
 
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+2. From root application folder run client app:
+```
+npm install
+npm run dev
+```
+
+3. Open website in browser using link in terminal window.
+
+## App capabilities:
+
+1. Open and edit animations from local JSON files.
+2. Open and edit animations from LottieFiles featured animations section.
+3. View all animation layers in hierarchy structure.
+4. Expand layers under another layer structure
+5. View layer details upon layer click
+6. Edit layer color (if applicable, not every layer have color settings)
+7. Delete layer
+8. Real-time collaborative experience
+9. Online status if somebody else is editing the same animation (for featured animations only)
+10. Save editing progress when at least one client has edit animation page opened
+11. Error handling when choosing incorrect file type during file selection
+
+## App opportunities:
+
+!!! IMPORTANT NOTE !!!
+All thing mentioned in this section were not implemented due to tight deadlines for this task and difficulties working with Lottie GraphQL API.
+
+1. Editing of wider variety of layer properties (color is available for now)
+2. Ability to filter out LottieFiles featured  animations (by default only first 20 available for now)
+3. Usage of appropriate database on server-side (for now data is saved locally on server)
+
+## Contact me:
+
+If you have any questions or problems running application locally, just send me an email, I'll be glad to help: suhost.v@gmail.com
