@@ -1,18 +1,17 @@
 import { useState, useEffect } from 'react'
-// import reactLogo from './assets/react.svg'
-// import viteLogo from '/vite.svg'
-// import { useQuery } from 'urql';
-// import { Player, Controls } from '@lottiefiles/react-lottie-player';
 import {useDropzone} from 'react-dropzone';
 import { useQuery } from 'urql';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Modal from '@mui/material/Modal';
-import { attachUidsToLayers, simplifyJson } from '../../utils/utils'
+import Snackbar from '@mui/material/Snackbar';
+import { attachUidsToLayers } from '../../utils/utils'
+import { LottieJsonInterface } from '../../interfaces/lottieJsonInterface'
 
 import './Homepage.scss';
 
+const DEFAULT_HIDE_NOTIFICATION_TIMER = 10000;
 const FILMS_QUERY = `
   {
     featuredPublicAnimations {
@@ -35,7 +34,7 @@ const FILMS_QUERY = `
   }
 `;
 
-const style = {
+const modalContentStyles = {
   position: 'absolute' as const,
   top: '50%',
   left: '50%',
@@ -48,9 +47,26 @@ const style = {
   p: 4,
 };
 
-function Homepage({ setAnimationJsonData, setSelectedFeaturedAnimationJsonUrl }) {
+interface EdgeInterface {
+  node: NodeInterface;
+}
+
+interface NodeInterface {
+  id: string;
+  imageUrl: string;
+  name: string;
+}
+
+interface HomepageInterface {
+  setAnimationJsonData: React.Dispatch<React.SetStateAction<LottieJsonInterface | null>>;
+  setSelectedFeaturedAnimationJsonUrl: React.Dispatch<React.SetStateAction<LottieJsonInterface | null>>;
+}
+
+function Homepage({ setAnimationJsonData, setSelectedFeaturedAnimationJsonUrl }: HomepageInterface) {
   const [shouldFireQuery, setShouldFireQuery] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [isDataTypeNotificationShown, setIsDataTypeNotificationShown] = useState(false);
+
   const {acceptedFiles, getRootProps, getInputProps} = useDropzone();
   const [result] = useQuery({
     query: FILMS_QUERY,
@@ -66,19 +82,22 @@ function Homepage({ setAnimationJsonData, setSelectedFeaturedAnimationJsonUrl })
   }, [data, fetching, error])
 
   useEffect(() => {
-    try {
-      acceptedFiles.forEach(file => {      
-        const fileReader = new FileReader();
-        fileReader.readAsText(file, "UTF-8");
-        fileReader.onload = (e) => {
-          const data = JSON.parse(e.target.result);
-          setAnimationJsonData(attachUidsToLayers(data));
+    acceptedFiles.forEach(file => {      
+      const fileReader = new FileReader();
+      fileReader.readAsText(file, "UTF-8");
+      fileReader.onload = (event: Event) => {
+        try {
+          const inputTarget = event.target as FileReader;
+          if (typeof inputTarget.result === "string") {
+            const data = JSON.parse(inputTarget?.result);
+            setAnimationJsonData(attachUidsToLayers(data));
+          }
+        } catch (error) {
+          setIsDataTypeNotificationShown(true);
+          console.error(error);
         }
-      });
-    } catch (error) {
-      console.error(error);
-    }
-
+      }
+    });
   }, [acceptedFiles, setAnimationJsonData]);
 
   const getRandomAnimations = () => {
@@ -91,9 +110,9 @@ function Homepage({ setAnimationJsonData, setSelectedFeaturedAnimationJsonUrl })
 
   const handleModalClose = () => setShowModal(false);
 
-  const selectNode = async (id) => {
+  const selectFeaturedAnimation = async (id: string) => {
     try {
-      const selectedJson = data?.featuredPublicAnimations?.edges.find(item => item.node.id === id);
+      const selectedJson = data?.featuredPublicAnimations?.edges.find((item: EdgeInterface) => item.node.id === id);
       const response = await fetch(selectedJson.node.jsonUrl);
       const jsonData = await response.json();
 
@@ -102,7 +121,11 @@ function Homepage({ setAnimationJsonData, setSelectedFeaturedAnimationJsonUrl })
     } catch (error) {
       console.error(error)
     }
-  }
+  };
+
+  const handleNotificationClose = () => {
+    setIsDataTypeNotificationShown(false);
+  };
 
   return (
     <div className="homepage-container">
@@ -120,28 +143,34 @@ function Homepage({ setAnimationJsonData, setSelectedFeaturedAnimationJsonUrl })
         onClose={handleModalClose}
         className="featured-animations-modal"
       >
-        <Box className="featured-animations-list-container" sx={style}>
+        <Box className="featured-animations-list-container" sx={modalContentStyles}>
           <Typography 
             variant="h6"
             className="featured-animations-list-title"
-            style={{fontWeight: 'bold'}}
           >
             Choose your featured Lottie animation:
           </Typography>
-          {data?.featuredPublicAnimations?.edges.map(item => (
+          {data?.featuredPublicAnimations?.edges.map((item: EdgeInterface) => (
             <Typography 
               variant="h6" 
               component="h2" 
               key={item.node.id} 
               className="featured-animations-list-item"
-              onClick={() => selectNode(item.node.id)}
+              onClick={() => selectFeaturedAnimation(item.node.id)}
             >
-              <img src={item.node.imageUrl} style={{width: "20px", padding: "0 10px 0 0"}}/>
+              <img src={item.node.imageUrl} className='animation-frame'/>
               {item.node.name}
             </Typography>
           ))}
         </Box>
       </Modal>
+      <Snackbar
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        open={isDataTypeNotificationShown}
+        onClose={handleNotificationClose}
+        autoHideDuration={DEFAULT_HIDE_NOTIFICATION_TIMER}
+        message="Wrong file format. Are you trying to open correct JSON???"
+      />
     </div>
   )
 }

@@ -15,10 +15,6 @@
       display: flex;
       align-items: center;
       cursor: pointer;
-
-      .drag-n-drop-text {
-
-      }
     }
   }
 }
@@ -39,6 +35,11 @@
 
       &:hover {
         background-color: lightgrey;
+      }
+
+      .animation-frame {
+        width: 20px;
+        padding-right: 10px;
       }
     }
   }

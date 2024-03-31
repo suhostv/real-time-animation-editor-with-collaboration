@@ -1,30 +1,34 @@
 import { useState, useEffect, useCallback } from 'react'
+import usePrevious from './utils/hooks/usePrevious';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 import Homepage from './components/Homepage/Homepage';
 import AnimationEditor from './components/AnimationEditor/AnimationEditor';
+import { 
+  WS_URL,
+  CONTENT_CHANGE_TYPE,
+  USER_CHANGE_TYPE, ONLINE_STATUS_CHANGE_TYPE
+} from './utils/constants';
+import { LayerInterface, LottieJsonInterface } from './interfaces/lottieJsonInterface'
 
-import './App.css'
+import './App.css';
 
-const WS_URL = 'ws://127.0.0.1:8000';
-
-const CONTENT_CHANGE_TYPE = 'contentchange';
-const USER_CHANGE_TYPE = 'userevent';
-const ONLINE_STATUS_CHANGE_TYPE = 'onlinestatuschange'
+interface MessageInterface {
+  data: string;
+}
 
 function App() {
-  const [showAnimationEditor, setShowAnimationEditor] = useState(false);
-  const [animationJsonData, setAnimationJsonData] = useState(null);
-  const [selectedFeaturedAnimationJsonUrl, setSelectedFeaturedAnimationJsonUrl] = useState(null);
+  const [animationJsonData, setAnimationJsonData] = useState<LottieJsonInterface | null>(null);
+  const [selectedFeaturedAnimationJsonUrl, setSelectedFeaturedAnimationJsonUrl] = useState<LottieJsonInterface | null>(null);
+  const previousSelectedFeaturedAnimationJsonUrl = usePrevious(selectedFeaturedAnimationJsonUrl);
 
-  const onMessageReceived = ({ data }) => {
+  const onMessageReceived = ({ data }: MessageInterface) => {
     const parsed = JSON.parse(data);
-    console.log({parsed});
     if (parsed.type === CONTENT_CHANGE_TYPE) {
       setAnimationJsonData(parsed.data)
     }
   }
 
-  const { sendJsonMessage, readyState, lastMessage, lastJsonMessage } = useWebSocket(WS_URL, {
+  const { sendJsonMessage, readyState } = useWebSocket(WS_URL, {
     onOpen: () => {
       console.log('WebSocket connection established.');
     },
@@ -35,8 +39,7 @@ function App() {
     shouldReconnect: () => true
   });
 
-  const updateJsonDataOnServer = useCallback((jsonData, additionalFields = {}) => {
-    console.log({additionalFields})
+  const updateJsonDataOnServer = useCallback((jsonData: LottieJsonInterface | null, additionalFields = {}) => {
     sendJsonMessage({
       type: CONTENT_CHANGE_TYPE,
       content: jsonData,
@@ -46,54 +49,50 @@ function App() {
   }, [sendJsonMessage]);
 
   useEffect(() => {
-    if(selectedFeaturedAnimationJsonUrl && readyState === ReadyState.OPEN) {
-      console.log("called while choose featured animation")
+    if(
+      selectedFeaturedAnimationJsonUrl && 
+      previousSelectedFeaturedAnimationJsonUrl !== selectedFeaturedAnimationJsonUrl &&
+      readyState === ReadyState.OPEN
+    ) {
+      console.log("called while choose featured animation", {animationJsonData})
       sendJsonMessage({
         type: USER_CHANGE_TYPE,
         editableAnimation: selectedFeaturedAnimationJsonUrl,
       });
-      updateJsonDataOnServer(animationJsonData, {initialData: true})
+      updateJsonDataOnServer(animationJsonData, { initialData: true })
     }
-  }, [selectedFeaturedAnimationJsonUrl, updateJsonDataOnServer, sendJsonMessage, readyState]);
+  }, [
+    previousSelectedFeaturedAnimationJsonUrl,
+    animationJsonData,
+    selectedFeaturedAnimationJsonUrl, 
+    updateJsonDataOnServer,
+    sendJsonMessage,
+    readyState
+  ]);
   
-  useEffect(() => {
-    console.log({lastMessage, lastJsonMessage});
-  }, [lastMessage, lastJsonMessage]);
-  
-  const handleDeleteLayer = (uid) => {
-    const animationJsonDataCopy = {...animationJsonData};
+  const handleDeleteLayer = (uid: string | undefined) => {
+    const animationJsonDataCopy = {...(animationJsonData ? animationJsonData : {})};
     animationJsonDataCopy.layers
 
-    function iter(layer, index, array) {
+    function iterate(layer: LayerInterface, index: number, array: Array<LayerInterface>) {
       if (layer.uniqueId === uid) {
           array.splice(index, 1);
           return true;
       }
-      return Array.isArray(layer.layers) && layer.layers.some(iter);
+      return Array.isArray(layer.layers) && layer.layers.some(iterate);
     }
 
-    animationJsonDataCopy.layers.some(iter);
+    animationJsonDataCopy?.layers?.some(iterate);
     setAnimationJsonData(animationJsonDataCopy);
     updateJsonDataOnServer(animationJsonDataCopy);
   };
 
-  useEffect(() => {
-    const shouldShowAnimationEditor = !!animationJsonData;
-    if (shouldShowAnimationEditor !== showAnimationEditor) {
-      setShowAnimationEditor(shouldShowAnimationEditor);
-    }
-  }, [animationJsonData]);
-
-  useEffect(() => {
-    console.log({showAnimationEditor})
-  }, [showAnimationEditor])
-
-  const handleChangeColor = (id: string, newColor) => {
-    const animationJsonDataCopy = {...animationJsonData};
+  const handleChangeColor = (id: string | undefined, newColor: Array<number>) => {
+    const animationJsonDataCopy = {...(animationJsonData ? animationJsonData : {})};
 
     animationJsonDataCopy.layers
 
-    function iter(layer, index, array) {
+    function iterate(layer: LayerInterface) {
       if (layer.uniqueId === id) {
           const shapes = layer?.shapes;
           shapes?.forEach(shape => {
@@ -109,10 +108,10 @@ function App() {
           });
           return true;
       }
-      return Array.isArray(layer.layers) && layer.layers.some(iter);
+      return Array.isArray(layer.layers) && layer.layers.some(iterate);
     }
 
-    animationJsonDataCopy.layers.some(iter);
+    animationJsonDataCopy?.layers?.some(iterate);
     setAnimationJsonData(animationJsonDataCopy);
     updateJsonDataOnServer(animationJsonDataCopy);
   }
@@ -128,9 +127,17 @@ function App() {
 
   return (
     <>
-      {showAnimationEditor 
-        ? <AnimationEditor animationJsonData={animationJsonData} handleDeleteLayer={handleDeleteLayer} handleChangeColor={handleChangeColor} goToHomepage={goToHomepage} selectedFeaturedAnimationJsonUrl={selectedFeaturedAnimationJsonUrl} />
-        : <Homepage setAnimationJsonData={setAnimationJsonData} setSelectedFeaturedAnimationJsonUrl={setSelectedFeaturedAnimationJsonUrl} />
+      {animationJsonData 
+        ? <AnimationEditor 
+            animationJsonData={animationJsonData}
+            handleDeleteLayer={handleDeleteLayer}
+            handleChangeColor={handleChangeColor}
+            goToHomepage={goToHomepage}
+          />
+        : <Homepage 
+            setAnimationJsonData={setAnimationJsonData}
+            setSelectedFeaturedAnimationJsonUrl={setSelectedFeaturedAnimationJsonUrl}
+          />
       }
     </>
   )

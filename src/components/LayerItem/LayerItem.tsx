@@ -1,14 +1,22 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import ListItemText from '@mui/material/ListItemText';
 import Collapse from '@mui/material/Collapse';
 import ListItemButton from '@mui/material/ListItemButton';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
-
+import { LayerInterface } from '../../interfaces/lottieJsonInterface'
 
 import './LayerItem.scss';
 
-function LayerItem({ layerInfo, handleLayerClick, selectedLayerId }) {
+type handleLayerClickFunction = (layerData: LayerInterface) => void;
+ 
+interface LayerItemInterface {
+  layerInfo: LayerInterface;
+  selectedLayerId: string | undefined;
+  handleLayerClick: handleLayerClickFunction;
+}
+
+function LayerItem({ layerInfo, handleLayerClick, selectedLayerId }: LayerItemInterface) {
   const [nestedLayersOpened, setNestedLayersOpened] = useState(false);
 
   const onLayerClick = () => {
