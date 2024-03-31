@@ -32,7 +32,6 @@ function broadcastMessage(json, userId) {
   for(let userId in clients) {
     let client = clients[userId];
     if(client.readyState === WebSocket.OPEN && liveEditorIds.includes(userId)) {
-      console.log('send message')
       client.send(data);
     }
   }
@@ -41,12 +40,16 @@ function broadcastMessage(json, userId) {
 function broadcastOnlineChangeMessage(data, userId) {
   const json = JSON.stringify({...data, type: eventTypes.ONLINE_STATUS_CHANGE});
   const liveEditorIds = Object.entries(users).reduce((acc, [key, value]) => (value === users[userId] ? [...acc, key] : acc), []);
+    console.log({liveEditorIds, data, userId})
 
-  // if connection is closed delete all user-related data
   if (data.collaboration === false) {
-    delete editableJsonByUser[users[userId]];
+    // if connection is closed for last user working on particular 
+    // animation - delete all animation-related data from server
+    if (liveEditorIds.length <= 1) {
+      delete editableJsonByUser[users[userId]];
+    }
+    // if connection is closed delete all user-related data
     delete users[userId];
-
   }
 
   // send online status updates to users if:
@@ -76,7 +79,8 @@ function handleMessage(message, userId) {
     broadcastOnlineChangeMessage({collaboration: true, sender: "user event"}, userId );
     // handle content change event
   } else if (dataFromClient.type === eventTypes.CONTENT_CHANGE) {
-    // if user has just connected - update his data with the one on server
+    // if user has just connected - update his data with the one from server
+    // console.log({dataFromClient, users, userId, dataOnServer: editableJsonByUser[users[userId]]})
     if (dataFromClient.initialData && editableJsonByUser[users[userId]]) {
       json.data = editableJsonByUser[users[userId]];
       // if there are changes on user side - update data on server
@@ -97,8 +101,13 @@ function handleDisconnect(userId) {
     const json = { type: eventTypes.USER_EVENT };
     broadcastOnlineChangeMessage({collaboration: false}, userId);
     json.data = { users };
+    // const liveEditorIds = Object.entries(users).reduce((acc, [key, value]) => (value === users[userId] ? [...acc, key] : acc), []);
+
+    // console.log({liveEditorIds})
     // delete all user-related data
-    delete editableJsonByUser[users[userId]];
+    // if (liveEditorIds.length <= 1) {
+    //   delete editableJsonByUser[users[userId]];
+    // }
     delete clients[userId];
     delete users[userId];
     broadcastMessage(json);
