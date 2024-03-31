@@ -4,11 +4,13 @@ This repository represent Vitalii Sukhostavskyi's assessment task and gives user
 
 ## Demo:
 
-[YouTube Demo link](https://www.youtube.com/watch?v=-d62DnsplO0)
+[YouTube Demo link](https://www.youtube.com/watch?v=-d62DnsplO0) (better quality)
+
+https://github.com/suhostv/real-time-animation-editor-with-collaboration/assets/16260497/b9a95569-7d16-473a-9ad9-ab577e926da4
 
 ## How to run locally:
 
-Prerequisite: you need to have Node v18 install on your machine.
+Prerequisite: you need to have Node v18 installed on your machine.
 
 This repository has both client and server applications, so we will need to start both:
 1. From root application folder run server app:
