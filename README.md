@@ -4,6 +4,8 @@ This repository represent Vitalii Sukhostavskyi's assessment task and gives user
 
 ## Demo:
 
+[YouTube Demo link](https://www.youtube.com/watch?v=-d62DnsplO0)
+
 ## How to run locally:
 
 Prerequisite: you need to have Node v18 install on your machine.
