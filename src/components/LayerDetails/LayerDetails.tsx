@@ -39,7 +39,7 @@ function LayerDetails({
     let colorValues;
     const shapes = selectedLayer?.shapes;
     shapes?.forEach(shape => {
-      if (shape.ty === "fl" && shape.c.k.length >= 3 && shape.c.k.length <= 4) {
+      if (shape.ty === "fl" && shape.c.k.length >= 3 && shape.c.k.length <= 4 && typeof shape.c.k[0] === "number") {
         colorValues = shape.c.k;
       } else if (shape.ty === "gr") {
         shape.it.forEach(el => {

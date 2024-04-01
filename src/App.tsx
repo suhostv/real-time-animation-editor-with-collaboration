@@ -54,7 +54,6 @@ function App() {
       previousSelectedFeaturedAnimationJsonUrl !== selectedFeaturedAnimationJsonUrl &&
       readyState === ReadyState.OPEN
     ) {
-      console.log("called while choose featured animation", {animationJsonData})
       sendJsonMessage({
         type: USER_CHANGE_TYPE,
         editableAnimation: selectedFeaturedAnimationJsonUrl,
