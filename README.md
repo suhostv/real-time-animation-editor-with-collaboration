@@ -48,8 +48,9 @@ npm run dev
 All thing mentioned in this section were not implemented due to tight deadlines for this task and difficulties working with Lottie GraphQL API.
 
 1. Editing of wider variety of layer properties (color is available for now)
-2. Ability to filter out LottieFiles featured  animations (by default only first 20 available for now)
-3. Usage of appropriate database on server-side (for now data is saved locally on server)
+2. Ability to edit wider variety of layer color configs (for now only plain layer colors can be changed, not ones with keyframes)
+3. Ability to filter out LottieFiles featured  animations (by default only first 20 available for now)
+4. Usage of appropriate database on server-side (for now data is saved locally on server)
 
 ## Contact me:
 
